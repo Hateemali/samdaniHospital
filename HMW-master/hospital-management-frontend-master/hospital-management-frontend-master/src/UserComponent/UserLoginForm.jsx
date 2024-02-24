@@ -1,0 +1,146 @@
+import { useContext, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../page/LoginContext";
+import axios from "axios";
+const UserLoginForm = () => {
+  let navigate = useNavigate();
+  const value = useContext(UserContext);
+  const [loginRequest, setLoginRequest] = useState({
+    emailId: "waji@gmail.com",
+    password: "1234",
+    role: "Admin",
+  });
+
+  const handleUserInput = (e) => {
+    setLoginRequest({ ...loginRequest, [e.target.name]: e.target.value });
+  };
+
+  const loginAction = (e) => {
+    //corrected
+    fetch("http://localhost:5000/api/users/user/login", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(loginRequest),
+    }).then((result) => {
+      toast.success("logged in successfully!!!", {
+        position: "top-center",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      console.log("login succesfull!");
+      navigate("/");
+      window.location.reload(true);
+      console.log("result", result);
+      result.json().then((res) => {
+        console.log(res);
+
+        if (res.role === "admin") {
+          sessionStorage.setItem("active-admin", JSON.stringify(res));
+        } else if (res.role === "patient") {
+          sessionStorage.setItem("active-patient", JSON.stringify(res));
+        } else if (res.role === "doctor") {
+          sessionStorage.setItem("active-doctor", JSON.stringify(res));
+          let data = { userId: res.id, available: true };
+          fetch("http://localhost:5000/api/users/doctor/updateAvailability", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          }).then((result) => {
+            console.log("Doctor status has been changed to true ", result);
+          });
+        }
+
+        const storedUserDataString = sessionStorage.getItem("active-doctor");
+        const storedUserData = JSON.parse(storedUserDataString);
+        console.log(storedUserData.id);
+        console.log(storedUserData.role);
+        console.log(storedUserData.token);
+      });
+    });
+    e.preventDefault();
+  };
+
+  return (
+    <div>
+      <div className="mt-2 d-flex aligns-items-center justify-content-center">
+        <div
+          className="card form-card border-color custom-bg"
+          style={{ width: "25rem" }}
+        >
+          <div className="card-header bg-color text-center custom-bg-text">
+            <h4 className="card-title">User Login</h4>
+          </div>
+          <div className="card-body">
+            <form>
+              <div class="mb-3 text-color">
+                <label for="role" class="form-label">
+                  <b>User Role</b>
+                </label>
+                <select
+                  onChange={handleUserInput}
+                  className="form-control"
+                  name="role"
+                >
+                  <option value="0">Select Role</option>
+                  <option value="admin"> Admin </option>
+                  <option value="patient"> Patient </option>
+                  <option value="doctor"> Doctor </option>
+                </select>
+              </div>
+
+              <div className="mb-3 text-color">
+                <label for="emailId" class="form-label">
+                  <b>Email Id</b>
+                </label>
+                <input
+                  type="email"
+                  className="form-control"
+                  id="emailId"
+                  name="emailId"
+                  onChange={handleUserInput}
+                  value={loginRequest.emailId}
+                />
+              </div>
+              <div className="mb-3 text-color">
+                <label for="password" className="form-label">
+                  <b>Password</b>
+                </label>
+                <input
+                  type="password"
+                  className="form-control"
+                  id="password"
+                  name="password"
+                  onChange={handleUserInput}
+                  value={loginRequest.password}
+                  autoComplete="on"
+                />
+              </div>
+              <button
+                type="submit"
+                className="btn bg-color custom-bg-text"
+                onClick={loginAction}
+              >
+                Login
+              </button>
+              <ToastContainer />
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default UserLoginForm;

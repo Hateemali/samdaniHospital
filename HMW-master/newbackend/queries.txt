@@ -1,0 +1,57 @@
+pool.query(
+  `
+DROP TABLE IF EXISTS Appointments;
+
+`,
+  (err, result) => {
+    if (err) {
+      console.error("Error creating appointments table:", err);
+    } else {
+      console.log("Appointments table deleted successfully");
+    }
+
+    // Close the pool
+    pool.end();
+  }
+);
+
+
+
+pool.query(
+  `
+DROP SCHEMA public CASCADE;
+
+`,
+  (err, result) => {
+    if (err) {
+      console.error("Error creating appointments table:", err);
+    } else {
+      console.log("Appointments table deleted successfully");
+    }
+
+    // Close the pool
+    pool.end();
+  }
+);
+
+
+CREATE TABLE IF NOT EXISTS Users (
+    id SERIAL PRIMARY KEY,
+    firstName VARCHAR(255),
+    lastName VARCHAR(255),
+    age INT,
+    sex VARCHAR(10),
+    bloodGroup VARCHAR(10),
+    emailId VARCHAR(255),
+    contact VARCHAR(15),
+    street VARCHAR(255),
+    city VARCHAR(255),
+    pincode INT,
+    password VARCHAR(255),
+    role VARCHAR(20),
+    specialist VARCHAR(255),
+    status VARCHAR(20),
+    doctorImage VARCHAR(255),
+    experience VARCHAR(255),
+    available BOOLEAN DEFAULT FALSE
+  );
